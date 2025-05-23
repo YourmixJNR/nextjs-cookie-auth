@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [form, setForm] = useState({
@@ -113,13 +114,13 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-500">
-          Don't have an account?{" "}
-          <a
+          Don&apos;t have an account?{" "}
+          <Link
             href="/auth/register"
             className="text-indigo-600 hover:underline font-medium"
           >
             Register
-          </a>
+          </Link>
         </p>
       </div>
     </div>

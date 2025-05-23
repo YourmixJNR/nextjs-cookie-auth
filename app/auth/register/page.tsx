@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -65,9 +66,16 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push("/dashboard");
       }, 1200);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSuccess(false);
-      setError(err?.message || "Registration failed. Please try again.");
+      if (err && typeof err === "object" && "message" in err) {
+        setError(
+          (err as { message?: string }).message ||
+            "Registration failed. Please try again."
+        );
+      } else {
+        setError("Registration failed. Please try again.");
+      }
     }
   };
 
@@ -187,12 +195,12 @@ export default function RegisterPage() {
         </form>
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{" "}
-          <a
+          <Link
             href="/auth/login"
             className="text-indigo-600 hover:underline font-medium"
           >
             Login
-          </a>
+          </Link>
         </p>
       </div>
     </div>
