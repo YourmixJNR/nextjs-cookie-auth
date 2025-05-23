@@ -1,31 +1,74 @@
 "use client";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function RegisterPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [success, setSuccess] = useState(false);
+
+  const router = useRouter();
+
+  const { registerUser } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess(true);
-    setForm({
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
-    setTimeout(() => setSuccess(false), 4000); // hide after 4 seconds
+
+    // basic client-side validation
+    if (
+      !form.fullName.trim() ||
+      !form.email.trim() ||
+      !form.password ||
+      !form.confirmPassword
+    ) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      await registerUser({
+        name: form.fullName,
+        email: form.email,
+        password: form.password,
+      });
+
+      setError(null); // hide error if any
+      setSuccess(true);
+      setForm({
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // delay navigation to show success message
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1200);
+    } catch (err: any) {
+      setSuccess(false);
+      setError(err?.message || "Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -34,7 +77,12 @@ export default function RegisterPage() {
         <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">
           Create an Account
         </h2>
-        {success && (
+        {error && !success && (
+          <div className="mb-4 p-3 rounded bg-red-100 text-red-800 text-center font-medium border border-red-200">
+            {error}
+          </div>
+        )}
+        {success && !error && (
           <div className="mb-4 p-3 rounded bg-green-100 text-green-800 text-center font-medium border border-green-200">
             Account created successfully!
           </div>
