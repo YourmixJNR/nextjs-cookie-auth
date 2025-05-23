@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
   const [form, setForm] = useState({
@@ -8,6 +10,10 @@ export default function LoginPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
+  const { loginUser } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,10 +21,26 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Login logic here
-    setSuccess(true);
-    setForm({ email: "", password: "" });
-    setTimeout(() => setSuccess(false), 3000);
+    setError(null);
+
+    if (!form.email.trim() || !form.password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    const isValid = loginUser(form.email, form.password);
+
+    if (isValid) {
+      setSuccess(true);
+      setForm({ email: "", password: "" });
+      setTimeout(() => {
+        setSuccess(false);
+        router.push("/dashboard");
+      }, 1200);
+    } else {
+      setSuccess(false);
+      setError("Invalid email or password.");
+    }
   };
 
   return (
@@ -27,7 +49,12 @@ export default function LoginPage() {
         <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">
           Login to Your Account
         </h2>
-        {success && (
+        {error && !success && (
+          <div className="mb-4 p-3 rounded bg-red-100 text-red-800 text-center font-medium border border-red-200">
+            {error}
+          </div>
+        )}
+        {success && !error && (
           <div className="mb-4 p-3 rounded bg-green-100 text-green-800 text-center font-medium border border-green-200">
             Login successful!
           </div>
