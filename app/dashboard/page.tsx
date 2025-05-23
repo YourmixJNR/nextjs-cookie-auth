@@ -1,13 +1,30 @@
 "use client";
-import { useState } from "react";
-
-const mockUser = {
-  name: "Michael Victor",
-  email: "michael@email.com",
-};
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {
-  const [user] = useState(mockUser);
+  const { getUserFromCookies, logoutUser } = useAuth();
+  const [user, setUser] = useState<{ name: string; email: string }>({
+    name: "",
+    email: "",
+  });
+  const router = useRouter();
+
+  useEffect(() => {
+    const userData = getUserFromCookies();
+    if (!userData.email) {
+      router.replace("/auth/login");
+    } else {
+      setUser({ name: userData.name, email: userData.email });
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  const handleLogout = () => {
+    logoutUser();
+    router.push("/auth/login");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex flex-col">
@@ -29,7 +46,7 @@ export default function DashboardPage() {
       <main className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-xl bg-white rounded-xl shadow-lg p-8 mt-8">
           <h2 className="text-xl font-semibold text-indigo-700 mb-4">
-            Welcome back, {user.name.split(" ")[0]}! 🎉
+            Welcome back, {user.name.split(" ")[0] || "User"}! 🎉
           </h2>
           <p className="text-gray-700 mb-6">
             This is your dashboard. Here you can see your profile info and
@@ -49,7 +66,10 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex justify-end mt-6">
-          <button className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold transition">
+          <button
+            onClick={handleLogout}
+            className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold transition"
+          >
             Logout
           </button>
         </div>

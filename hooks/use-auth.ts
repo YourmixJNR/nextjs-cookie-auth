@@ -1,4 +1,4 @@
-import { parseCookies, setCookie } from "nookies";
+import { destroyCookie, parseCookies, setCookie } from "nookies";
 
 type RegisterData = {
   name: string;
@@ -30,5 +30,12 @@ export function useAuth() {
     return user.email === email && user.password === password;
   }
 
-  return { registerUser, getUserFromCookies, loginUser };
+  // logout: remove cookies
+  function logoutUser() {
+    destroyCookie(null, "user_email");
+    destroyCookie(null, "user_name");
+    destroyCookie(null, "user_password");
+  }
+
+  return { registerUser, getUserFromCookies, loginUser, logoutUser };
 }
